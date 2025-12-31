@@ -1,0 +1,28 @@
+name: Windows RDP (Safe)
+
+on:
+  workflow_dispatch:
+
+jobs:
+  rdp:
+    runs-on: windows-latest
+    timeout-minutes: 360   # ~6 hours (safe limit)
+
+    steps:
+    - name: Create RDP User
+      run: |
+        net user rdpuser StrongPass@123 /add
+        net localgroup administrators rdpuser /add
+
+    - name: Enable Remote Desktop
+      run: |
+        reg add "HKLM\System\CurrentControlSet\Control\Terminal Server" /v fDenyTSConnections /t REG_DWORD /d 0 /f
+        Enable-NetFirewallRule -DisplayGroup "Remote Desktop"
+
+    - name: Show Login Info
+      run: |
+        echo "=============================="
+        echo "Username: rdpuser"
+        echo "Password: StrongPass@123"
+        echo "=============================="
+        ipconfig
